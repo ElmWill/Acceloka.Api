@@ -1,5 +1,6 @@
 ﻿namespace Acceloka.Api.Features.Tickets.GetAvailableTickets;
 
+using Acceloka.Api.Common;
 using Acceloka.Api.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,25 @@ public class GetAvailableTicketsHandler
         GetAvailableTicketsQuery request,
         CancellationToken cancellationToken)
     {
+        if (request.Page <= 0)
+        {
+            throw new ApiExceptions("Page must be greater than 0",
+                StatusCodes.Status400BadRequest);
+        }
+
+        if (request.Price.HasValue && request.Price.Value < 0)
+        {
+            throw new ApiExceptions("Price must be greater than 0",
+                StatusCodes.Status400BadRequest);
+        }
+
+        if (request.MinEventDate.HasValue && request.MaxEventDate.HasValue &&
+            request.MinEventDate > request.MaxEventDate)
+        {
+            throw new ApiExceptions("MinEventDate cannot be greater than MaxEventDate",
+                StatusCodes.Status400BadRequest);
+        }
+
         var query = _context.Tickets
             .Include(Q => Q.Category)
             .Where(Q => Q.Quota > 0)
@@ -33,13 +53,13 @@ public class GetAvailableTicketsHandler
         if (!string.IsNullOrEmpty(request.TicketCode))
         {
             query = query.Where(Q =>
-            Q.Category.Name.Contains(request.TicketCode));
+            Q.Code.Contains(request.TicketCode));
         }
 
         if (!string.IsNullOrEmpty(request.TicketName))
         {
             query = query.Where(Q =>
-            Q.Category.Name.Contains(request.TicketName));
+            Q.Name.Contains(request.TicketName));
         }
 
         if (request.Price.HasValue)

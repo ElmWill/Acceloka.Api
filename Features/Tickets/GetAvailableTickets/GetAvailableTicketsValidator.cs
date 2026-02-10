@@ -7,13 +7,13 @@ public class GetAvailableTicketsValidator : AbstractValidator<GetAvailableTicket
 {
     public GetAvailableTicketsValidator()
     {
-        RuleFor(x => x.Page)
+        RuleFor(Q => Q.Page)
             .GreaterThan(0);
 
-        RuleFor(x => x.OrderState)
-            .Must(x => x == null
-            || x.ToLower() == "asc"
-            || x.ToLower() == "desc")
+        RuleFor(Q => Q.OrderState)
+            .Must(Q => Q == null
+            || Q.ToLower() == "asc"
+            || Q.ToLower() == "desc")
             .WithMessage("OrderState must be asc or desc");
     }
 }

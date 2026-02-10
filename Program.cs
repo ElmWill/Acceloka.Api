@@ -3,6 +3,7 @@ using Acceloka.Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using MediatR;
+using Acceloka.Api.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 
