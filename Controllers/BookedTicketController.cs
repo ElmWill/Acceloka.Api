@@ -1,0 +1,33 @@
+﻿using Acceloka.Api.Features.Tickets.BookTicket;
+using Acceloka.Api.Features.Tickets.GetAvailableTickets;
+using Acceloka.Api.Features.Tickets.GetBookedTicket;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
+namespace Acceloka.Api.Controllers
+{
+    [Route("api/v1")]
+    [ApiController]
+    public class BookedTicketController : ControllerBase
+    {
+        private readonly IMediator _mediator;
+        public BookedTicketController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
+        [HttpGet("get-booked-ticket/{bookedTicketId}")]
+        public async Task<IActionResult> GetBookedResult(
+            Guid bookedTicketId)
+        {
+            var result = await _mediator.Send(
+                new GetBookedTicketQuery
+                {
+                    BookedTicketId = bookedTicketId
+                });
+            return Ok(result);
+        }
+    }
+}

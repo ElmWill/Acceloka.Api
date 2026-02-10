@@ -25,6 +25,12 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
         var date_now = DateTime.UtcNow;
         var bookingDate = LocalDateTime.FromDateTime(date_now);
         var responseItems = new List<BookedTicketResult>();
+        var booked = new BookedTicket
+        {
+            Id = Guid.NewGuid(),
+            BookingDate = bookingDate,
+            BookedTicketDetails = new List<BookedTicketDetail>()
+        };
 
         using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
@@ -66,12 +72,6 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
             }
 
             ticket.Quota -= item.Quantity;
-
-            var booked = new BookedTicket
-            {
-                Id = Guid.NewGuid(),
-                BookingDate = bookingDate
-            };
 
             booked.BookedTicketDetails.Add(
                 new BookedTicketDetail
