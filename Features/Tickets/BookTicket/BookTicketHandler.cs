@@ -114,7 +114,7 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
                 TotalPrice = G.Sum(Q => Q.Price * Q.Quantity)
             }).ToList();
 
-        var totalPrice = responseItems.Sum(Q => Q.Price);
+        var totalPrice = responseItems.Sum(Q => Q.Price * Q.Quantity);
 
         return new BookTicketResponse
         {
