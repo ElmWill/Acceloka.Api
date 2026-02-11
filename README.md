@@ -43,9 +43,9 @@ Each feature contains its own:
 
 ```sql
 CREATE DATABASE acceloka_db;  
-
+```
 ### 2️⃣ Create Tables  
-
+```sql
 CREATE TABLE "Categories" (
     "Id" UUID PRIMARY KEY,
     "Name" VARCHAR(100) NOT NULL
@@ -88,9 +88,9 @@ CREATE TABLE "BookedTicketDetails" (
 );
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";  
-
+```
 ### 3️⃣ Insert Seed Data  
-
+```sql
 INSERT INTO "Categories" ("Id","Name") VALUES
 ('11111111-1111-1111-1111-111111111111','Transportasi Darat'),
 ('22222222-2222-2222-2222-222222222222','Transportasi Laut'),
@@ -111,6 +111,7 @@ VALUES
 (gen_random_uuid(),'55555555-5555-5555-5555-555555555555','CT001','Coldplay Concert','2026-04-01 20:00',2000000,100),
 (gen_random_uuid(),'55555555-5555-5555-5555-555555555555','CT002','Bruno Mars Concert','2026-04-10 20:00',1800000,75),
 (gen_random_uuid(),'22222222-2222-2222-2222-222222222222','TL002','Kapal Bali-Lombok','2026-03-12 09:00',550000,65);
+```
 ⚙️ Configure Connection String
 Edit appsettings.json:
 
