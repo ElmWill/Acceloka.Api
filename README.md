@@ -21,7 +21,7 @@ This project uses the **Marvel Pattern**, where features are grouped by function
 
 Example structure:
 
-Features/
+Features/  
 └── Tickets/  
 ├── BookTicket/  
 ├── GetAvailableTickets/  
