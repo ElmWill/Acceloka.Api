@@ -23,9 +23,9 @@ Example structure:
 
 Features/  
 └── Tickets/  
-├── BookTicket/  
-├── GetAvailableTickets/  
-└──GetBookedTicket/  
+    ├── BookTicket/  
+    ├── GetAvailableTickets/  
+    └──GetBookedTicket/  
 
 
 
