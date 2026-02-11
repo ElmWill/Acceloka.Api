@@ -148,6 +148,3 @@ No Entity Framework migrations are used.
 PostgreSQL must be running before starting the API.
 
 Models and DbContext are generated from the existing database schema.
----
-### 👤 Author
-## ElmWill
