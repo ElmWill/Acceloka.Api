@@ -49,20 +49,6 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
 
             foreach (var item in request.Tickets)
             {
-                _logger.LogInformation(
-                    "Processing ticket. Code={Code}, Quantity={Quantity}",
-                    item.TicketCode,
-                    item.Quantity);
-
-                if (item.Quantity < 1)
-                {
-                    _logger.LogWarning(
-                        "Invalid quantity. Code={Code}, Quantity={Quantity}",
-                        item.TicketCode,
-                        item.Quantity);
-                    throw new ApiExceptions("Quantity must be greater than 0", StatusCodes.Status400BadRequest);
-                } 
-
                 var affectedRows = await _context.Database.ExecuteSqlRawAsync(
                     @"UPDATE ""Tickets""
                   SET ""Quota"" = ""Quota"" - {0}
@@ -80,7 +66,7 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
 
                 var ticket = await _context.Tickets
                     .Include(t => t.Category)
-                    .FirstAsync(t => t.Code == item.TicketCode, cancellationToken);
+                    .FirstOrDefaultAsync(t => t.Code == item.TicketCode, cancellationToken);
 
                 if (ticket.EventDate <= bookingDate)
                 {
