@@ -68,6 +68,7 @@ public class EditBookedTicketHandler
             if (currentQuantity == newQuantity)
             {
                 _logger.LogInformation("Quantity unchanged. No update needed.");
+                await transaction.CommitAsync(cancellationToken);
                 return new EditBookedTicketResponse
                 {
                     TicketCode = detail.Ticket.Code,

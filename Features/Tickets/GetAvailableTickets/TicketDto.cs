@@ -16,5 +16,7 @@
         public int TotalTickets { get; set; }
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
+        public string OrderedBy { get; set; } = string.Empty;
+        public string OrderState { get; set; } = string.Empty;
     }
 }

@@ -148,7 +148,9 @@ public class GetAvailableTicketsHandler
             Tickets = tickets,
             TotalTickets = totalTickets,
             CurrentPage = request.Page,
-            TotalPages = (int)Math.Ceiling(totalTickets / (double)pageSize)
+            TotalPages = (int)Math.Ceiling(totalTickets / (double)pageSize),
+            OrderedBy = orderBy,
+            OrderState = orderState
         };
     }
 }
