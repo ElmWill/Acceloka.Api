@@ -114,6 +114,7 @@ VALUES
 ```
 ---
 ⚙️ Configure Connection String
+```json
 Edit appsettings.json:
 
 {
@@ -121,6 +122,7 @@ Edit appsettings.json:
     "DefaultConnection": "Host=localhost;Port=5432;Database=acceloka_db;Username=postgres;Password=your_password"
   }
 }
+```
 ---
 ⚠️ This project uses DB First, so migrations are not required.
 If the database schema changes, re-run the scaffold command.
