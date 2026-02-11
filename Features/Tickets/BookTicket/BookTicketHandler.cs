@@ -13,9 +13,13 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketResponse>
 {
     private readonly AppDbContext _context;
-    public BookTicketHandler(AppDbContext context)
+    private readonly ILogger<BookTicketHandler> _logger;
+    public BookTicketHandler(
+        AppDbContext context,
+        ILogger<BookTicketHandler> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<BookTicketResponse> Handle(
@@ -32,6 +36,11 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
             BookedTicketDetails = new List<BookedTicketDetail>()
         };
 
+        _logger.LogInformation(
+            "Booking Started... BookingId{BookingId}, TicketsCount={Count}",
+            booked.Id,
+            request.Tickets.Count);
+
         await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
         try
@@ -40,8 +49,19 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
 
             foreach (var item in request.Tickets)
             {
+                _logger.LogInformation(
+                    "Processing ticket. Code={Code}, Quantity={Quantity}",
+                    item.TicketCode,
+                    item.Quantity);
+
                 if (item.Quantity < 1)
+                {
+                    _logger.LogWarning(
+                        "Invalid quantity. Code={Code}, Quantity={Quantity}",
+                        item.TicketCode,
+                        item.Quantity);
                     throw new ApiExceptions("Quantity must be greater than 0", StatusCodes.Status400BadRequest);
+                } 
 
                 var affectedRows = await _context.Database.ExecuteSqlRawAsync(
                     @"UPDATE ""Tickets""
@@ -50,14 +70,26 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
                     item.Quantity, item.TicketCode);
 
                 if (affectedRows == 0)
+                {
+                    _logger.LogWarning(
+                       "Quota not enough or ticket not found. Code={Code}, Quantity={Quantity}",
+                       item.TicketCode,
+                       item.Quantity);
                     throw new ApiExceptions("Not enough quota or ticket not found", StatusCodes.Status400BadRequest);
+                }
 
                 var ticket = await _context.Tickets
                     .Include(t => t.Category)
                     .FirstAsync(t => t.Code == item.TicketCode, cancellationToken);
 
                 if (ticket.EventDate <= bookingDate)
+                {
+                    _logger.LogWarning(
+                        "Event date passed. Code={Code}, EventDate={EventDate}",
+                        item.TicketCode,
+                        ticket.EventDate);
                     throw new ApiExceptions("Event date has passed", StatusCodes.Status400BadRequest);
+                }
 
                 booked.BookedTicketDetails.Add(new BookedTicketDetail
                 {
@@ -75,13 +107,26 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
                     Price = ticket.Price,
                     Quantity = item.Quantity
                 });
+
+                _logger.LogInformation(
+                    "Ticket added to booking. Code={Code}, BookingId={BookingId}",
+                    item.TicketCode,
+                    booked.Id);
             }
 
             await _context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "Booking completed successfully. BookingId={BookingId}, TotalItems={Items}",
+                booked.Id,
+                responseItems.Count);
         }
-        catch
+        catch (ApiExceptions ex)
         {
+            _logger.LogWarning(ex,
+                "Error during booking. BookingId={BookingId}",
+                booked.Id);
             await transaction.RollbackAsync(cancellationToken);
             throw;
         }

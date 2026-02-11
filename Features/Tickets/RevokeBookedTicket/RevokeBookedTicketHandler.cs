@@ -9,15 +9,23 @@ public class RevokeBookedTicketHandler
     : IRequestHandler<RevokeBookedTicketCommand, RevokeBookedTicketResponse>
 {
     private readonly AppDbContext _context;
-    public RevokeBookedTicketHandler(AppDbContext context)
+    private readonly ILogger<RevokeBookedTicketHandler> _logger;
+    public RevokeBookedTicketHandler(
+        AppDbContext context,
+        ILogger<RevokeBookedTicketHandler> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<RevokeBookedTicketResponse> Handle(
         RevokeBookedTicketCommand request,
         CancellationToken cancellationToken)
     {
+        _logger.LogInformation(
+            "RevokeBookedTicket started. BookedTicketId={BookedTicketId}, TicketCode={TicketCode}, Quantity={Quantity}",
+            request.BookedTicketId, request.TicketCode, request.Quantity);
+
         await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
         try
@@ -30,19 +38,45 @@ public class RevokeBookedTicketHandler
                     c => c.Id == request.BookedTicketId, cancellationToken);
 
             if (bookedTicket == null)
+            {
+                _logger.LogWarning("BookedTicket not found. Id={BookedTicketId}", request.BookedTicketId);
                 throw new ApiExceptions("BookedTicketId Not Found", StatusCodes.Status404NotFound);
+            }
 
             var detail = bookedTicket.BookedTicketDetails
                 .FirstOrDefault(x => x.Ticket.Code == request.TicketCode);
 
             if (detail == null)
+            {
+                _logger.LogWarning(
+                    "TicketCode not found in booking. TicketCode={TicketCode}, BookedTicketId={BookedTicketId}",
+                    request.TicketCode, request.BookedTicketId);
+
                 throw new ApiExceptions("TicketCode is not listed on this booking", StatusCodes.Status404NotFound);
+            }
+
+            _logger.LogInformation(
+                "Current booked quantity={CurrentQuantity}, Revoke quantity={RevokeQuantity}",
+                detail.Quantity, request.Quantity);
 
             if (request.Quantity < 1)
+            {
+                _logger.LogWarning("Invalid revoke quantity (<1). Quantity={Quantity}", request.Quantity);
                 throw new ApiExceptions("Quantity must be at least 1", StatusCodes.Status400BadRequest);
+            }
 
             if (request.Quantity > detail.Quantity)
+            {
+                _logger.LogWarning(
+                    "Revoke quantity exceeds booked quantity. Requested={Requested}, Available={Available}",
+                    request.Quantity, detail.Quantity);
+
                 throw new ApiExceptions("Quantity is more than what was booked", StatusCodes.Status400BadRequest);
+            }
+
+            _logger.LogInformation(
+                "Restoring quota. TicketId={TicketId}, RestoreQuantity={Quantity}",
+                detail.Ticket.Id, request.Quantity);
 
             await _context.Database.ExecuteSqlRawAsync(
                 @"UPDATE ""Tickets""
@@ -54,8 +88,16 @@ public class RevokeBookedTicketHandler
 
             detail.Quantity -= request.Quantity;
 
+            _logger.LogInformation(
+                "Updated detail quantity. TicketCode={TicketCode}, RemainingQuantity={RemainingQuantity}",
+                detail.Ticket.Code, detail.Quantity);
+
             if (detail.Quantity == 0)
             {
+                _logger.LogInformation(
+                    "BookedTicketDetail removed because quantity is zero. TicketCode={TicketCode}",
+                    detail.Ticket.Code);
+
                 _context.BookedTicketDetails.Remove(detail);
             }
 
@@ -65,11 +107,19 @@ public class RevokeBookedTicketHandler
 
             if (!hasRemainingDetails && detail.Quantity == 0)
             {
+                _logger.LogInformation(
+                    "BookedTicket removed because no remaining ticket details. BookedTicketId={BookedTicketId}",
+                    bookedTicket.Id);
+
                 _context.BookedTickets.Remove(bookedTicket);
             }
 
             await _context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "RevokeBookedTicket succeeded. BookedTicketId={BookedTicketId}, TicketCode={TicketCode}, RemainingQuantity={RemainingQuantity}",
+                request.BookedTicketId, request.TicketCode, detail.Quantity);
 
             return new RevokeBookedTicketResponse
             {
@@ -79,8 +129,12 @@ public class RevokeBookedTicketHandler
                 RemainingQuantity = detail.Quantity,
             };
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex,
+                "RevokeBookedTicket failed. BookedTicketId={BookedTicketId}, TicketCode={TicketCode}",
+                request.BookedTicketId, request.TicketCode);
+
             await transaction.RollbackAsync(cancellationToken);
             throw;
         }
