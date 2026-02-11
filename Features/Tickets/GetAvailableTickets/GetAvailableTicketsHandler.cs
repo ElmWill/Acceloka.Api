@@ -59,19 +59,19 @@ public class GetAvailableTicketsHandler
         if (!string.IsNullOrWhiteSpace(request.CategoryName))
         {
             query = query.Where(Q =>
-                Q.Category.Name.Contains(request.CategoryName));
+                EF.Functions.ILike(Q.Category.Name, $"%{request.CategoryName}%"));
         }
 
         if (!string.IsNullOrWhiteSpace(request.TicketCode))
         {
             query = query.Where(Q =>
-                Q.Code.Contains(request.TicketCode));
+                EF.Functions.ILike(Q.Code, $"%{request.TicketCode}%"));
         }
 
         if (!string.IsNullOrWhiteSpace(request.TicketName))
         {
             query = query.Where(Q =>
-                Q.Name.Contains(request.TicketName));
+                EF.Functions.ILike(Q.Name, $"%{request.TicketName}%"));
         }
 
         if (request.Price.HasValue)
