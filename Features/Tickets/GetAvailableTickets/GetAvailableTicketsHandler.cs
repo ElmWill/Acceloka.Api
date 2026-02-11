@@ -6,6 +6,7 @@ using Acceloka.Api.Infrastructure.Persistence.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
+using FluentValidation;
 
 public class GetAvailableTicketsHandler
     : IRequestHandler<GetAvailableTicketsQuery, PagedResult<TicketDto>>
@@ -26,30 +27,6 @@ public class GetAvailableTicketsHandler
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("GetAvailableTickets started with {@Request}", request);
-
-        if (request.Page <= 0)
-        {
-            throw new ApiExceptions(
-                "Page must be greater than 0",
-                StatusCodes.Status400BadRequest);
-        }
-
-        if (request.Price.HasValue && request.Price.Value < 0)
-        {
-            throw new ApiExceptions(
-                "Price must be greater than or equal to 0",
-                StatusCodes.Status400BadRequest);
-        }
-
-        if (request.MinEventDate.HasValue && request.MaxEventDate.HasValue)
-        {
-            if (request.MinEventDate > request.MaxEventDate)
-            {
-                throw new ApiExceptions(
-                    "MinEventDate cannot be greater than MaxEventDate",
-                    StatusCodes.Status400BadRequest);
-            }
-        }
 
         IQueryable<Ticket> query = _context.Tickets
             .AsNoTracking()

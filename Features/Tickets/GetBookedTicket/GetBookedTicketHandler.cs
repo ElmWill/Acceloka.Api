@@ -35,17 +35,6 @@ public class GetBookedTicketHandler
                 Q => Q.Id == request.BookedTicketId,
                 cancellationToken);
 
-        if (bookedTicket == null)
-        {
-            _logger.LogWarning(
-                "BookedTicket not found. BookedTicketId={BookedTicketId}",
-                request.BookedTicketId);
-
-            throw new ApiExceptions(
-                "BookedTicketId Not Found",
-                StatusCodes.Status404NotFound);
-        }
-
         var grouped = bookedTicket.BookedTicketDetails
             .GroupBy(x => x.Ticket.Category.Name)
             .Select(g => new CategoryGroupResponse

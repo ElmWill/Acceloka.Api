@@ -37,46 +37,8 @@ public class RevokeBookedTicketHandler
                 .FirstOrDefaultAsync(
                     c => c.Id == request.BookedTicketId, cancellationToken);
 
-            if (bookedTicket == null)
-            {
-                _logger.LogWarning("BookedTicket not found. Id={BookedTicketId}", request.BookedTicketId);
-                throw new ApiExceptions("BookedTicketId Not Found", StatusCodes.Status404NotFound);
-            }
-
             var detail = bookedTicket.BookedTicketDetails
                 .FirstOrDefault(x => x.Ticket.Code == request.TicketCode);
-
-            if (detail == null)
-            {
-                _logger.LogWarning(
-                    "TicketCode not found in booking. TicketCode={TicketCode}, BookedTicketId={BookedTicketId}",
-                    request.TicketCode, request.BookedTicketId);
-
-                throw new ApiExceptions("TicketCode is not listed on this booking", StatusCodes.Status404NotFound);
-            }
-
-            _logger.LogInformation(
-                "Current booked quantity={CurrentQuantity}, Revoke quantity={RevokeQuantity}",
-                detail.Quantity, request.Quantity);
-
-            if (request.Quantity < 1)
-            {
-                _logger.LogWarning("Invalid revoke quantity (<1). Quantity={Quantity}", request.Quantity);
-                throw new ApiExceptions("Quantity must be at least 1", StatusCodes.Status400BadRequest);
-            }
-
-            if (request.Quantity > detail.Quantity)
-            {
-                _logger.LogWarning(
-                    "Revoke quantity exceeds booked quantity. Requested={Requested}, Available={Available}",
-                    request.Quantity, detail.Quantity);
-
-                throw new ApiExceptions("Quantity is more than what was booked", StatusCodes.Status400BadRequest);
-            }
-
-            _logger.LogInformation(
-                "Restoring quota. TicketId={TicketId}, RestoreQuantity={Quantity}",
-                detail.Ticket.Id, request.Quantity);
 
             await _context.Database.ExecuteSqlRawAsync(
                 @"UPDATE ""Tickets""
