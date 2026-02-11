@@ -23,9 +23,9 @@ Example structure:
 
 Features/  
 └── Tickets/  
-&emsp├── BookTicket/  
-&emsp├── GetAvailableTickets/  
-&emsp└──GetBookedTicket/  
+&emsp;├── BookTicket/  
+&emsp;├── GetAvailableTickets/  
+&emsp;└──GetBookedTicket/  
 
 
 
