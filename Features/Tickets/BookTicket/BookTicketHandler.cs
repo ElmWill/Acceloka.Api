@@ -22,9 +22,9 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
         BookTicketCommand request,
         CancellationToken cancellationToken)
     {
-        var date_now = DateTime.UtcNow;
-        var bookingDate = LocalDateTime.FromDateTime(date_now);
+        var bookingDate = LocalDateTime.FromDateTime(DateTime.UtcNow);
         var responseItems = new List<BookedTicketResult>();
+
         var booked = new BookedTicket
         {
             Id = Guid.NewGuid(),
@@ -32,49 +32,34 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
             BookedTicketDetails = new List<BookedTicketDetail>()
         };
 
-        using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
-        foreach (var item in request.Tickets)
+        try
         {
-            if (item.Quantity <= 0)
+            _context.BookedTickets.Add(booked);
+
+            foreach (var item in request.Tickets)
             {
-                throw new ApiExceptions("Quantity must be greater than 0",
-                    StatusCodes.Status400BadRequest);
-            }
+                if (item.Quantity < 1)
+                    throw new ApiExceptions("Quantity must be greater than 0", StatusCodes.Status400BadRequest);
 
-            var ticket = await _context.Tickets
-                .FromSqlRaw(@"SELECT * FROM ""Tickets"" WHERE ""Code"" = {0} FOR UPDATE", item.TicketCode)
-                .Include(t => t.Category)
-                .FirstOrDefaultAsync(cancellationToken);
+                var affectedRows = await _context.Database.ExecuteSqlRawAsync(
+                    @"UPDATE ""Tickets""
+                  SET ""Quota"" = ""Quota"" - {0}
+                  WHERE ""Code"" = {1} AND ""Quota"" >= {0}",
+                    item.Quantity, item.TicketCode);
 
-            if (ticket == null)
-            {
-                throw new ApiExceptions($"Ticket Code {item.TicketCode} is not recognized",
-                    StatusCodes.Status404NotFound);
-            }
+                if (affectedRows == 0)
+                    throw new ApiExceptions("Not enough quota or ticket not found", StatusCodes.Status400BadRequest);
 
-            if (ticket.Quota <= 0)
-            {
-                throw new ApiExceptions($"{item.TicketCode} is sold out",
-                    StatusCodes.Status400BadRequest);
-            }
+                var ticket = await _context.Tickets
+                    .Include(t => t.Category)
+                    .FirstAsync(t => t.Code == item.TicketCode, cancellationToken);
 
-            if (item.Quantity > ticket.Quota)
-            {
-                throw new ApiExceptions("The quantity you are trying to book is more than the available quota",
-                    StatusCodes.Status400BadRequest);
-            }
+                if (ticket.EventDate <= bookingDate)
+                    throw new ApiExceptions("Event date has passed", StatusCodes.Status400BadRequest);
 
-            if (ticket.EventDate <= bookingDate)
-            {
-                throw new ApiExceptions("Event date has passed",
-                    StatusCodes.Status400BadRequest);
-            }
-
-            ticket.Quota -= item.Quantity;
-
-            booked.BookedTicketDetails.Add(
-                new BookedTicketDetail
+                booked.BookedTicketDetails.Add(new BookedTicketDetail
                 {
                     Id = Guid.NewGuid(),
                     TicketId = ticket.Id,
@@ -82,36 +67,31 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
                     Quantity = item.Quantity
                 });
 
-            _context.BookedTickets.Add(booked);
+                responseItems.Add(new BookedTicketResult
+                {
+                    TicketCode = ticket.Code,
+                    TicketName = ticket.Name,
+                    CategoryName = ticket.Category.Name,
+                    Price = ticket.Price,
+                    Quantity = item.Quantity
+                });
+            }
 
-            responseItems.Add(new BookedTicketResult
-            {
-                TicketCode = ticket.Code,
-                TicketName = ticket.Name,
-                CategoryName = ticket.Category.Name,
-                Price = ticket.Price,
-                Quantity = item.Quantity
-            });
-        }
-        try
-        {
             await _context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
         }
-        catch (DbUpdateConcurrencyException)
+        catch
         {
-
-            throw new ApiExceptions("Ticket quota was updated by another user.Please try again.",
-        StatusCodes.Status409Conflict);
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
         }
-        
-        await transaction.CommitAsync(cancellationToken);
 
         var totalPerCategory = responseItems
             .GroupBy(Q => Q.CategoryName)
-            .Select(G => new TotalPerCategories
+            .Select(g => new TotalPerCategories
             {
-                CategoryName = G.Key,
-                TotalPrice = G.Sum(Q => Q.Price * Q.Quantity)
+                CategoryName = g.Key,
+                TotalPrice = g.Sum(x => x.Price * x.Quantity)
             }).ToList();
 
         var totalPrice = responseItems.Sum(Q => Q.Price * Q.Quantity);
@@ -123,4 +103,5 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
             TotalPrice = totalPrice
         };
     }
+
 }

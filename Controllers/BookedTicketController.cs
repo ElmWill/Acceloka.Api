@@ -1,4 +1,5 @@
 ﻿using Acceloka.Api.Features.Tickets.BookTicket;
+using Acceloka.Api.Features.Tickets.EditBookedTicket;
 using Acceloka.Api.Features.Tickets.GetAvailableTickets;
 using Acceloka.Api.Features.Tickets.GetBookedTicket;
 using Acceloka.Api.Features.Tickets.RevokeBookedTicket;
@@ -46,6 +47,14 @@ namespace Acceloka.Api.Controllers
                     Quantity = quantity
                 });
 
+            return Ok(result);
+        }
+
+        [HttpPut("edit-booked-ticket")]
+        public async Task<IActionResult> EditBookedTicket(
+            [FromBody] EditBookedTicketCommand command)
+        {
+            var result = await _mediator.Send(command);
             return Ok(result);
         }
     }
