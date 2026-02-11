@@ -112,6 +112,7 @@ VALUES
 (gen_random_uuid(),'55555555-5555-5555-5555-555555555555','CT002','Bruno Mars Concert','2026-04-10 20:00',1800000,75),
 (gen_random_uuid(),'22222222-2222-2222-2222-222222222222','TL002','Kapal Bali-Lombok','2026-03-12 09:00',550000,65);
 ```
+---
 ⚙️ Configure Connection String
 Edit appsettings.json:
 
@@ -120,13 +121,13 @@ Edit appsettings.json:
     "DefaultConnection": "Host=localhost;Port=5432;Database=acceloka_db;Username=postgres;Password=your_password"
   }
 }
-
+---
 ⚠️ This project uses DB First, so migrations are not required.
 If the database schema changes, re-run the scaffold command.
 
 ▶️ Run the API
 dotnet run
-
+---
 📌 Important Notes
 This project strictly follows Database-First approach.
 
@@ -135,6 +136,6 @@ No Entity Framework migrations are used.
 PostgreSQL must be running before starting the API.
 
 Models and DbContext are generated from the existing database schema.
-
+---
 👤 Author
 ElmWill
