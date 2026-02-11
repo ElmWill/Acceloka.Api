@@ -1,50 +1,4 @@
-﻿# Acceloka API
-
-Acceloka API is a .NET 10 Web API built using the Marvel Architecture Pattern. This project uses **PostgreSQL** as the database and follows a **Database-First (DB First)** approach.
----
-
-## 🚀 Tech Stack
-
-- .NET 10 (ASP.NET Core Web API)
-- PostgreSQL
-- Entity Framework Core (DB First)
-- MediatR
-- FluentValidation
-- NodaTime
-- Swagger / OpenAPI
-
----
-
-## 🧱 Architecture Pattern
-
-This project uses the **Marvel Pattern**, where features are grouped by functionality instead of layers.
-
-Example structure:
-
-Features/
-└── Tickets/
-├── BookTicket/
-├── GetAvailableTickets/
-└──GetBookedTicket/
-
-
-
-Each feature contains its own:
-- Command / Query
-- Handler
-- Validator
-- DTOs
-
----
-
-## 🗄️ Database Setup (PostgreSQL - DB First)
-
-### 1️⃣ Create Database
-
-```sql
-CREATE DATABASE acceloka_db;  
-
-### 2️⃣ Create Tables  
+﻿CREATE DATABASE acceloka_db;
 
 CREATE TABLE "Categories" (
     "Id" UUID PRIMARY KEY,
@@ -87,9 +41,7 @@ CREATE TABLE "BookedTicketDetails" (
         CHECK ("Quantity" > 0)
 );
 
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";  
-
-### 3️⃣ Insert Seed Data  
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 INSERT INTO "Categories" ("Id","Name") VALUES
 ('11111111-1111-1111-1111-111111111111','Transportasi Darat'),
@@ -111,29 +63,5 @@ VALUES
 (gen_random_uuid(),'55555555-5555-5555-5555-555555555555','CT001','Coldplay Concert','2026-04-01 20:00',2000000,100),
 (gen_random_uuid(),'55555555-5555-5555-5555-555555555555','CT002','Bruno Mars Concert','2026-04-10 20:00',1800000,75),
 (gen_random_uuid(),'22222222-2222-2222-2222-222222222222','TL002','Kapal Bali-Lombok','2026-03-12 09:00',550000,65);
-⚙️ Configure Connection String
-Edit appsettings.json:
 
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=acceloka_db;Username=postgres;Password=your_password"
-  }
-}
 
-⚠️ This project uses DB First, so migrations are not required.
-If the database schema changes, re-run the scaffold command.
-
-▶️ Run the API
-dotnet run
-
-📌 Important Notes
-This project strictly follows Database-First approach.
-
-No Entity Framework migrations are used.
-
-PostgreSQL must be running before starting the API.
-
-Models and DbContext are generated from the existing database schema.
-
-👤 Author
-ElmWill
