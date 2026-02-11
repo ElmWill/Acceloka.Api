@@ -137,13 +137,10 @@ dotnet user-secrets list
 The API should now connect to PostgreSQL successfully.
 
 ---
-⚠️ This project uses DB First, so migrations are not required.
+### ⚠️ This project uses DB First, so migrations are not required.
 If the database schema changes, re-run the scaffold command.
-
-▶️ Run the API
-dotnet run
 ---
-📌 Important Notes
+### Important Notes
 This project strictly follows Database-First approach.
 
 No Entity Framework migrations are used.
@@ -152,5 +149,5 @@ PostgreSQL must be running before starting the API.
 
 Models and DbContext are generated from the existing database schema.
 ---
-👤 Author
-ElmWill
+### 👤 Author
+## ElmWill
