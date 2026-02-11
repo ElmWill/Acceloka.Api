@@ -3,7 +3,7 @@
 Acceloka API is a .NET 10 Web API built using the Marvel Architecture Pattern. This project uses **PostgreSQL** as the database and follows a **Database-First (DB First)** approach.
 ---
 
-## 🚀 Tech Stack
+## Tech Stack
 
 - .NET 10 (ASP.NET Core Web API)
 - PostgreSQL
@@ -15,7 +15,7 @@ Acceloka API is a .NET 10 Web API built using the Marvel Architecture Pattern. T
 
 ---
 
-## 🧱 Architecture Pattern
+## Architecture Pattern
 
 This project uses the **Marvel Pattern**, where features are grouped by functionality instead of layers.
 
@@ -37,7 +37,7 @@ Each feature contains its own:
 
 ---
 
-## 🗄️ Database Setup (PostgreSQL - DB First)
+## Database Setup (PostgreSQL - DB First)
 
 ### 1️⃣ Create Database
 
@@ -113,7 +113,7 @@ VALUES
 (gen_random_uuid(),'22222222-2222-2222-2222-222222222222','TL002','Kapal Bali-Lombok','2026-03-12 09:00',550000,65);
 ```
 ---
-## ⚙️ Configuration (User Secrets)
+##  Configuration (User Secrets)
 
 This project uses User Secrets to store sensitive configuration such as the database connection string.
 
@@ -137,10 +137,10 @@ dotnet user-secrets list
 The API should now connect to PostgreSQL successfully.
 
 ---
-### ⚠️ This project uses DB First, so migrations are not required.
+### ⚠️ Important Notes
+This project uses DB First, so migrations are not required.
 If the database schema changes, re-run the scaffold command.
----
-### Important Notes
+
 This project strictly follows Database-First approach.
 
 No Entity Framework migrations are used.
