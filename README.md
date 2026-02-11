@@ -113,16 +113,29 @@ VALUES
 (gen_random_uuid(),'22222222-2222-2222-2222-222222222222','TL002','Kapal Bali-Lombok','2026-03-12 09:00',550000,65);
 ```
 ---
-⚙️ Configure Connection String
-```json
-Edit appsettings.json:
+## ⚙️ Configuration (User Secrets)
 
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=acceloka_db;Username=postgres;Password=your_password"
-  }
-}
+This project uses User Secrets to store sensitive configuration such as the database connection string.
+
+### 1️⃣ Initialize User Secrets
+
+Run this command inside the API project folder:
+```cmd
+dotnet user-secrets init
 ```
+### 2️⃣ Add PostgreSQL Connection String
+
+Run this command:
+```cmd
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=acceloka_db;Username=postgres;Password=your_password"
+```
+
+### 3️⃣ Verify User Secrets
+```cmd
+dotnet user-secrets list
+```
+The API should now connect to PostgreSQL successfully.
+
 ---
 ⚠️ This project uses DB First, so migrations are not required.
 If the database schema changes, re-run the scaffold command.
