@@ -1,11 +1,12 @@
-using Acceloka.Api.Features.Tickets.GetAvailableTickets;
-using Acceloka.Api.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-using FluentValidation;
-using MediatR;
-using Serilog;
 using Acceloka.Api.Common;
 using Acceloka.Api.Common.Behaviors;
+using Acceloka.Api.Common.ModelBinders;
+using Acceloka.Api.Features.Tickets.GetAvailableTickets;
+using Acceloka.Api.Infrastructure.Persistence;
+using FluentValidation;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,10 @@ builder.Host.UseSerilog();
 
 
 builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.ModelBinderProviders.Insert(0, new LocalDateTimeModelBinderProvider());
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
