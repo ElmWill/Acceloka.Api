@@ -27,13 +27,23 @@ public class GetBookedTicketHandler
             request.BookedTicketId);
 
         var bookedTicket = await _context.BookedTickets
-            .AsNoTracking()
             .Include(Q => Q.BookedTicketDetails)
                 .ThenInclude(x => x.Ticket)
                     .ThenInclude(t => t.Category)
             .FirstOrDefaultAsync(
                 Q => Q.Id == request.BookedTicketId,
                 cancellationToken);
+
+        if (bookedTicket == null)
+        {
+            _logger.LogWarning(
+                "BookedTicket not found. BookedTicketId={BookedTicketId}",
+                request.BookedTicketId);
+
+            throw new ApiExceptions(
+                "BookedTicketId Not Found",
+                StatusCodes.Status404NotFound);
+        }
 
         var grouped = bookedTicket.BookedTicketDetails
             .GroupBy(x => x.Ticket.Category.Name)

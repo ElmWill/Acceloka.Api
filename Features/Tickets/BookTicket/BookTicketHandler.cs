@@ -68,6 +68,13 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
                     .Include(t => t.Category)
                     .FirstOrDefaultAsync(t => t.Code == item.TicketCode, cancellationToken);
 
+                if (ticket == null)
+                {
+                    throw new ApiExceptions(
+                    $"Ticket not found",
+                    StatusCodes.Status404NotFound);
+                }
+
                 if (ticket.EventDate <= bookingDate)
                 {
                     _logger.LogWarning(
@@ -113,7 +120,12 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
             _logger.LogWarning(ex,
                 "Error during booking. BookingId={BookingId}",
                 booked.Id);
-            await transaction.RollbackAsync(cancellationToken);
+
+            if (transaction != null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+            }
+            
             throw;
         }
 

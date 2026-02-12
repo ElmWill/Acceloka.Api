@@ -37,8 +37,32 @@ public class RevokeBookedTicketHandler
                 .FirstOrDefaultAsync(
                     c => c.Id == request.BookedTicketId, cancellationToken);
 
+            if (bookedTicket == null)
+            {
+                _logger.LogWarning("BookedTicket not found. Id={BookedTicketId}", request.BookedTicketId);
+                throw new ApiExceptions("BookedTicketId Not Found", StatusCodes.Status404NotFound);
+            }
+
             var detail = bookedTicket.BookedTicketDetails
                 .FirstOrDefault(x => x.Ticket.Code == request.TicketCode);
+
+            if (detail == null)
+            {
+                _logger.LogWarning(
+                    "TicketCode not found in booking. TicketCode={TicketCode}, BookedTicketId={BookedTicketId}",
+                    request.TicketCode, request.BookedTicketId);
+
+                throw new ApiExceptions("TicketCode is not listed on this booking", StatusCodes.Status404NotFound);
+            }
+
+            if (request.Quantity > detail.Quantity)
+            {
+                _logger.LogWarning(
+                    "Revoke quantity exceeds booked quantity. Requested={Requested}, Available={Available}",
+                    request.Quantity, detail.Quantity);
+
+                throw new ApiExceptions("Quantity is more than what was booked", StatusCodes.Status400BadRequest);
+            }
 
             await _context.Database.ExecuteSqlRawAsync(
                 @"UPDATE ""Tickets""

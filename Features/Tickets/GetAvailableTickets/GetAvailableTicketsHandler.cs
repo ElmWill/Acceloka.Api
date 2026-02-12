@@ -59,14 +59,12 @@ public class GetAvailableTicketsHandler
 
         if (request.MinEventDate.HasValue)
         {
-            var min = LocalDateTime.FromDateTime(request.MinEventDate.Value);
-            query = query.Where(Q => Q.EventDate >= min);
+            query = query.Where(Q => Q.EventDate >= request.MinEventDate);
         }
 
         if (request.MaxEventDate.HasValue)
         {
-            var max = LocalDateTime.FromDateTime(request.MaxEventDate.Value);
-            query = query.Where(Q => Q.EventDate <= max);
+            query = query.Where(Q => Q.EventDate <= request.MaxEventDate);
         }
 
         var totalTickets = await query.CountAsync(cancellationToken);

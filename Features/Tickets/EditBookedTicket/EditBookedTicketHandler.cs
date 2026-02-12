@@ -37,8 +37,21 @@ public class EditBookedTicketHandler
                     c => c.Id == request.BookedTicketId,
                     cancellationToken);
 
+            if (bookedTicket == null)
+            {
+                _logger.LogWarning("BookedTicket not found. Id={BookedTicketId}", request.BookedTicketId);
+                throw new ApiExceptions("BookedTicketId Not Found", StatusCodes.Status404NotFound);
+            }
+
             var detail = bookedTicket.BookedTicketDetails
                 .FirstOrDefault(x => x.Ticket.Code == request.TicketCode);
+
+            if (detail == null)
+            {
+                _logger.LogWarning("TicketCode not found in booking. TicketCode={TicketCode}, BookedTicketId={BookedTicketId}",
+                    request.TicketCode, request.BookedTicketId);
+                throw new ApiExceptions("TicketCode is not listed on this booking", StatusCodes.Status404NotFound);
+            }
 
             var currentQuantity = detail.Quantity;
             var newQuantity = request.Quantity;
