@@ -6,6 +6,8 @@ using Acceloka.Api.Infrastructure.Persistence;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,12 +24,14 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 
-builder.Services.AddControllers();
 builder.Services.AddControllers(options =>
 {
     options.ModelBinderProviders.Insert(0, new LocalDateTimeModelBinderProvider());
+})
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
 });
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

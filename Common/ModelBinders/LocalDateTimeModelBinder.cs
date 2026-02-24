@@ -8,8 +8,12 @@ public class LocalDateTimeModelBinder : IModelBinder
 {
     private readonly string[] _formats =
     {
+        "yyyy-MM-dd",
         "yyyy-MM-dd HH:mm",
         "yyyy-MM-dd HH:mm:ss",
+        "yyyy-MM-ddTHH:mm",
+        "yyyy-MM-ddTHH:mm:ss",
+        "dd-MM-yyyy",
         "dd-MM-yyyy HH:mm",
         "dd-MM-yyyy HH:mm:ss"
     };
