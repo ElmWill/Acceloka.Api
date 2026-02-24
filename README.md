@@ -25,6 +25,7 @@ Features/
 └── Tickets/  
 &emsp;├── BookTicket/  
 &emsp;├── GetAvailableTickets/  
+&emsp;├── RevokedBookedTickets/  
 &emsp;└──GetBookedTicket/  
 
 
