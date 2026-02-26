@@ -95,7 +95,7 @@ public class GetAvailableTicketsHandler
                 : query.OrderBy(Q => Q.Code)
         };
 
-        const int pageSize = 10;
+        const int pageSize = 5;
 
         var tickets = await query
             .Skip((request.Page - 1) * pageSize)
