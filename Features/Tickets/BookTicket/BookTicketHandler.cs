@@ -141,6 +141,7 @@ public class BookTicketHandler : IRequestHandler<BookTicketCommand, BookTicketRe
 
         return new BookTicketResponse
         {
+            BookedTicketId = booked.Id,
             Items = responseItems,
             TotalPerCategories = totalPerCategory,
             TotalPrice = totalPrice

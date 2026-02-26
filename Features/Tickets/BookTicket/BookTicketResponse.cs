@@ -2,6 +2,7 @@
 {
     public class BookTicketResponse
     {
+        public Guid BookedTicketId { get; set; }
         public List<BookedTicketResult> Items { get; set; } = new();
         public List<TotalPerCategories> TotalPerCategories { get; set; } = new();
         public decimal TotalPrice { get; set; }
